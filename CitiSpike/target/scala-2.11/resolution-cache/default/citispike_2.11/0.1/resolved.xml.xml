@@ -4,7 +4,7 @@
 		module="citispike_2.11"
 		revision="0.1"
 		status="integration"
-		publication="20180917113620"
+		publication="20180925141654"
 	>
 		<description>
 		CitiSpike
@@ -32,8 +32,8 @@
 	<dependencies>
 		<dependency org="org.scala-lang" name="scala-compiler" rev="2.11.8" conf="scala-tool->default,optional(default)"/>
 		<dependency org="org.scala-lang" name="scala-library" rev="2.11.8" conf="scala-tool->default,optional(default);compile->default(compile)"/>
-		<dependency org="org.apache.spark" name="spark-core_2.11" rev="2.2.1" conf="compile->default(compile)"/>
-		<dependency org="org.apache.spark" name="spark-sql_2.11" rev="2.2.1" conf="compile->default(compile)"/>
+		<dependency org="org.apache.spark" name="spark-core_2.11" rev="2.3.0" conf="compile->default(compile)"/>
+		<dependency org="org.apache.spark" name="spark-sql_2.11" rev="2.3.0" conf="compile->default(compile)"/>
 		<dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-core" rev="2.6.0" conf="compile->default(compile)"/>
 		<dependency org="org.apache.hbase" name="hbase-common" rev="1.2.6.1" conf="compile->default(compile)"/>
 		<dependency org="com.google.guava" name="guava" rev="15.0" conf="compile->default(compile)"/>

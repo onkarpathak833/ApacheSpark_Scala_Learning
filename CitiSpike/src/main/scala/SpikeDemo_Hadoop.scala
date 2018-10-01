@@ -12,9 +12,9 @@ object SpikeDemo_Hadoop {
     val accountSchema = StructType(
       Array(
         StructField("AccountNumber", StringType),
-        StructField("TxnDate", StringType),
-        StructField("TxnType", DoubleType),
-        StructField("Amount", StringType)
+        StructField("TxnMonth", StringType),
+        StructField("TxnYear", DoubleType),
+        StructField("TotalBalance", StringType)
       )
     )
     val seq = Seq("Dummy_ID","Date_of_Txn","Transaction_Type","Amount").map(col(_))

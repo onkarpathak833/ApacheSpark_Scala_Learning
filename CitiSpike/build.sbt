@@ -5,10 +5,10 @@ version := "0.1"
 scalaVersion := "2.11.8"
 
 // https://mvnrepository.com/artifact/org.apache.spark/spark-core
-libraryDependencies += "org.apache.spark" % "spark-core_2.11" % "2.2.1"
+libraryDependencies += "org.apache.spark" % "spark-core_2.11" % "2.3.0"
 
 // https://mvnrepository.com/artifact/org.apache.spark/spark-sql
-libraryDependencies += "org.apache.spark" % "spark-sql_2.11" % "2.2.1"
+libraryDependencies += "org.apache.spark" % "spark-sql_2.11" % "2.3.0"
 
 // https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-mapreduce-client-core
 libraryDependencies += "org.apache.hadoop" % "hadoop-mapreduce-client-core" % "2.6.0"

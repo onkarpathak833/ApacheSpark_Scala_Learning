@@ -8,16 +8,20 @@ import org.apache.hadoop.hbase.mapred.TableOutputFormat
 import org.apache.hadoop.mapred.{JobConf, TextOutputFormat}
 import org.apache.spark.rdd.RDD
 import org.apache.hadoop.hbase.util.Bytes
+import org.apache.hadoop.hbase.Cell
+import org.apache.hadoop.hbase.CellUtil
+
 import scala.collection.mutable
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
-import org.apache.hadoop.hbase.mapreduce.HFileOutputFormat
+import org.apache.hadoop.hbase.mapreduce.{HFileOutputFormat, HFileOutputFormat2, LoadIncrementalHFiles}
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
 import org.apache.hadoop.hbase.mapred.TableOutputFormat
 import org.apache.hadoop.hbase.client.Put
-import org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.hbase.client.HTable
+
+import scala.util.Random
 
 object SpikeDemo {
 
@@ -98,8 +102,8 @@ object SpikeDemo {
   def connectToHBase():JobConf={
 
     val conf = HBaseConfiguration.create()
-      val outputTable = "txn_data"
-    import org.apache.hadoop.hbase.client.HTable
+      val outputTable = "transactions"
+
     val myTable = new HTable(conf, outputTable)
          System.setProperty("user.name", "hdfs")
          System.setProperty("HADOOP_USER_NAME", "hdfs")
@@ -108,16 +112,17 @@ object SpikeDemo {
           conf.set("mapreduce.outputformat.class", "org.apache.hadoop.hbase.mapreduce.TableOutputFormat")
           conf.setInt("timeout", 120000)
           conf.set("hbase.zookeeper.quorum", "localhost")
-    conf.setInt("hbase.zookeeper.property.clientPort",  2181)
+          conf.setInt("hbase.zookeeper.property.clientPort",  2181)
           conf.set("zookeeper.znode.parent", "/hbase-unsecure")
           conf.setInt("hbase.client.scanner.caching", 10000)
-    conf.set("zookeeper.znode.parent","/hbase-unsecure")
-          //.registerKryoClasses(Array(classOf[org.apache.hadoop.hbase.client.Result]))
+          conf.set("zookeeper.znode.parent","/hbase-unsecure")
+
           val jobConfig: JobConf = new JobConf(conf,this.getClass)
-         jobConfig.setOutputFormat(classOf[TableOutputFormat])
-         jobConfig.set(TableOutputFormat.OUTPUT_TABLE,outputTable)
+          jobConfig.setOutputFormat(classOf[TableOutputFormat])
+          jobConfig.set(TableOutputFormat.OUTPUT_TABLE,outputTable)
 
           return jobConfig
+
   }
 
 
@@ -126,41 +131,26 @@ object SpikeDemo {
 
     val sc = new SparkContext(new SparkConf().setAppName("test-data").setMaster("local[1]"))
 
-    val txnRdd = sc.textFile("/Users/techops/Documents/Kafka/Sample_data.csv", 1)
 
     val testHadoopRdd = sc.textFile("/Users/techops/Documents/Kafka/Sample_data.csv", 1)
 
-    //val testHadoopRdd = sc.newAPIHadoopFile("/Users/techops/Documents/Kafka/Sample_data.csv")
-
-    //val txnRdd = sc.newAPIHadoopFile("/Users/techops/Documents/Kafka/Sample_data.csv")
-    //printMonthlyBalanceData(sc)
-
-    /*
-    *
-    * In line def details
-    *
-    * */
-
-    //val txnRdd = sc.textFile("/Users/techops/Documents/Kafka/Sample_data.csv", 1)
-
-    val acctKeyGrp = txnRdd.groupBy { x => x.split(",")(0)+x.split(",")(1).substring(2, 5) }
-
-    //acctKeyGrp.saveAsTextFile("/Users/techops/Documents/Kafka/output3.txt")
+    //val testHadoopRdd = sc.textFile("/Users/techops/Documents/Hbase/Data/SampleTxnData.csv", 1)
+    val acctKeyGrp = testHadoopRdd.groupBy { x => x.split(",")(0)+x.split(",")(1).substring(2, x.split(",")(1).length) }
+    val sortedData = acctKeyGrp.sortByKey(ascending = true)
     val sqlContext= new org.apache.spark.sql.SQLContext(sc)
-    import sqlContext.implicits._
-    //val groupDataframe = acctKeyGrp.toDF()
-    val testDs = testHadoopRdd.toDS()
+
     val monthlyRdd = sc.emptyRDD
 
 
     val jobConfig = connectToHBase()
     val dataList:List[String] = List()
 
-    acctKeyGrp.foreach(x => {
+    val monthTxnRdd = sortedData.map(x => {
 
-      val accountNumber = x._1.substring(0,x._1.length()-3)
-      val txnMonth = x._1.substring(x._1.length()-3,x._1.length())
-      print("For Account Number = "+accountNumber+" Txn Month = "+txnMonth+"\n")
+      val accountNumber = x._1.substring(0,(x._1.length)-7)
+      val txnMonth = x._1.substring((x._1.length)-7,(x._1.length)-4)
+      val txnYear = x._1.substring((x._1.length)-4,x._1.length)
+      //println(x)
       var creditAmt = 0
       var debitAmt = 0
       var totalBalance = 0
@@ -178,40 +168,45 @@ object SpikeDemo {
         if(txnType.equals("D")){
           debitAmt = debitAmt + amount.toInt
         }
-        print("Txn Type = "+txnType+" Txn Date = "+txnDate+" Amount = "+amount+"\n")
+
       }
+
       totalBalance = debitAmt - creditAmt
-      print("Total Balance for Month "+txnMonth+" = "+totalBalance+"\n")
-      //val hadoopRdd = sc.newAPIHadoopFile(accountNumber+","+txnMonth+","+totalBalance)
-      //hadoopRdd.saveAsNewAPIHadoopDataset(jobConfig)
-
-
-
-
-    })
-
-    val sortedRdd = testHadoopRdd.sortBy(x => x.split(",")(0)+x.split(",")(1))
-
-    val allData = sortedRdd.map(x => {
-
-      var index = 1;
-      index = index + 1
-      var txndata = x.split(",")
-
-      val kv: KeyValue = new KeyValue((System.currentTimeMillis()+x.split(",")(0)+x.split(",")(1)).getBytes, "txn".getBytes(), "all_data".getBytes,x.getBytes)
-      (new ImmutableBytesWritable(Bytes.toBytes(System.currentTimeMillis()+""+index)),kv)
-
+      //print("Total Balance for Month "+txnMonth+" = "+totalBalance+"\n")
+      (accountNumber,txnMonth,txnYear,totalBalance)
 
     })
 
 
-    allData.saveAsNewAPIHadoopFile("/Users/techops/Documents/Hbase/Data/Data2", classOf[ImmutableBytesWritable], classOf[KeyValue], classOf[HFileOutputFormat], jobConfig)
-    //allData.saveAsTextFile("/Users/techops/Documents/Spark")
-    //allData.saveAsNewAPIHadoopFile("/Users/techops/Documents", classOf[ImmutableBytesWritable], classOf[KeyValue], classOf[HFileOutputFormat], jobConfig)
+    val sortRdd = monthTxnRdd.sortBy(x => (x._2))
+
+    val allData = sortRdd.flatMap(x => {
+    var index = 0;
+    var rowKey = (System.currentTimeMillis())
+      val addRowKey = (x._1).toString
+      val columnNames = List("account_number","Month","Year","Total_Balance").sorted
+      val dataValues = List(x._1,x._2,x._3,x._4.toString)
+
+      for(i<-0 to 3)yield{
+        val rand = new Random()
+        Thread.sleep(1)
+        val kv: KeyValue = new KeyValue((rowKey.toString).getBytes, "monthly".getBytes,columnNames(i).getBytes,dataValues(i).getBytes)
+        index = index + 1
+        (new ImmutableBytesWritable((rowKey.toString).getBytes),kv)
+      }
+
+    }
+    )
+
+    println("Start Time is 1: "+System.currentTimeMillis())
+    allData.saveAsNewAPIHadoopFile("/Users/techops/Documents/Hbase/Data/Data3", classOf[ImmutableBytesWritable], classOf[KeyValue], classOf[HFileOutputFormat2], jobConfig)
+
+
     val bulkLoader = new LoadIncrementalHFiles(jobConfig)
-    val table = new HTable(jobConfig,"txn_data")
-
-    bulkLoader.doBulkLoad(new Path("/Users/techops/Documents/Hbase/Data/Data2"), table)
+    val table = new HTable(jobConfig,"transactions")
+    println("Start Time is 2: "+System.currentTimeMillis())
+    bulkLoader.doBulkLoad(new Path("/Users/techops/Documents/Hbase/Data/Data3"), table)
+    println("Finish Time is : "+System.currentTimeMillis())
   }
 
 
