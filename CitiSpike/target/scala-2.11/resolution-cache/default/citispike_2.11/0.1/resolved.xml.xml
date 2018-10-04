@@ -4,7 +4,7 @@
 		module="citispike_2.11"
 		revision="0.1"
 		status="integration"
-		publication="20180925141654"
+		publication="20181004154840"
 	>
 		<description>
 		CitiSpike
@@ -32,6 +32,7 @@
 	<dependencies>
 		<dependency org="org.scala-lang" name="scala-compiler" rev="2.11.8" conf="scala-tool->default,optional(default)"/>
 		<dependency org="org.scala-lang" name="scala-library" rev="2.11.8" conf="scala-tool->default,optional(default);compile->default(compile)"/>
+		<dependency org="com.eed3si9n" name="sbt-assembly" rev="0.11.2" conf="compile->default(compile)" e:sbtVersion="1.0" e:scalaVersion="2.11"/>
 		<dependency org="org.apache.spark" name="spark-core_2.11" rev="2.3.0" conf="compile->default(compile)"/>
 		<dependency org="org.apache.spark" name="spark-sql_2.11" rev="2.3.0" conf="compile->default(compile)"/>
 		<dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-core" rev="2.6.0" conf="compile->default(compile)"/>
@@ -50,5 +51,8 @@
 		<dependency org="org.apache.hbase" name="hbase-shell" rev="1.2.6.1" conf="compile->default(compile)"/>
 		<dependency org="org.apache.hbase" name="hbase-testing-util" rev="1.2.6.1" conf="compile->default(compile)"/>
 		<dependency org="org.apache.hbase" name="hbase-thrift" rev="1.2.6.1" conf="compile->default(compile)"/>
+		<dependency org="org.apache.hadoop" name="hadoop-common" rev="2.6.0-cdh5.15.0" conf="compile->default(compile)"/>
+		<dependency org="org.apache.hbase" name="hbase-common" rev="1.2.1.6" conf="compile->default(compile)"/>
+		<dependency org="com.hortonworks" name="shc-core" rev="1.0.1-1.6-s_2.10" conf="compile->default(compile)"/>
 	</dependencies>
 </ivy-module>

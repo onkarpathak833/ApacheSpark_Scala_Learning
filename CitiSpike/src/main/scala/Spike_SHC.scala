@@ -30,7 +30,7 @@ object Spike_SHC {
     import spark.implicits._
 
     val txnData = spark.read.option("header",true).schema(txnSchema).csv("/Users/techops/Documents/Kafka/Sample_data.csv")
-      .as[Transaction]
+      .as[Transaction1]
 txnData.schema(0)
     txnData.repartition($"AccountNumber").foreachPartition( p=> {
 
@@ -62,4 +62,4 @@ txnData.schema(0)
 
 case class MonthTransaction(AccountNumber: String, TxnMonth: String, TxnYear: String, TotalBalance: String)
 
-case class Transaction(AccountNumber: String, Date: String, TxnType: String, Amount: String)
+case class Transaction1(AccountNumber: String, Date: String, TxnType: String, Amount: String)

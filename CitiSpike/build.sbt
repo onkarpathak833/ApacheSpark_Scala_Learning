@@ -1,8 +1,12 @@
-name := "CitiSpike"
+import sbt.Keys.version
 
-version := "0.1"
-
-scalaVersion := "2.11.8"
+lazy val root = (project in file(".")).
+  settings(
+    name := "CitiSpike",
+      version := "0.1",
+scalaVersion := "2.11.8",
+    mainClass in Compile := Some("SparkHbase_SHC")
+  )
 
 // https://mvnrepository.com/artifact/org.apache.spark/spark-core
 libraryDependencies += "org.apache.spark" % "spark-core_2.11" % "2.3.0"
@@ -44,3 +48,17 @@ libraryDependencies += "org.apache.hbase" % "hbase-shell" % "1.2.6.1"
 
 libraryDependencies += "org.apache.hbase" % "hbase-testing-util" % "1.2.6.1"
 libraryDependencies += "org.apache.hbase" % "hbase-thrift" % "1.2.6.1"
+
+
+
+// https://mvnrepository.com/artifact/com.hortonworks/shc-core
+libraryDependencies += "org.apache.hadoop" % "hadoop-common" % "2.6.0-cdh5.15.0"
+libraryDependencies += "org.apache.hbase" % "hbase-common" % "1.2.1.6"
+
+resolvers += "Hortonworks Repository" at "http://repo.hortonworks.com/content/repositories/releases/"
+
+// https://mvnrepository.com/artifact/com.hortonworks/shc-core
+libraryDependencies += "com.hortonworks" % "shc-core" % "1.0.1-1.6-s_2.10"
+
+
+

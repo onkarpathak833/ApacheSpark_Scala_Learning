@@ -104,7 +104,7 @@ object HBaseAtomicity {
       }).toList
 
 
-      val vlist: RDD[(ImmutableBytesWritable, KeyValue)] = spark.sparkContext.parallelize(myList)
+      val vlist: RDD[(ImmutableBytesWritable, KeyValue)] = spark.sparkContext.parallelize(List())
       val configuration = getHBaseConfiguration()
       configuration.set("hbase.mapred.outputtable", "Positions")
       vlist.saveAsNewAPIHadoopDataset(configuration)
